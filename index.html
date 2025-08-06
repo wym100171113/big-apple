@@ -70,7 +70,7 @@
                 </linearGradient>
             </defs>
             
-            <!-- Original Apple path with exact dimensions -->
+            <!-- Original Apple path -->
             <path d="m1288 597l28 2c160 5 308 85 400 216a495 495 0 0 0-236 415 478 478 0 0 0 292 440 1096 1096 0 0 1-152 310c-90 133-183 264-332 266-145 4-194-85-360-85-167 0-219 83-357 89-142 5-250-143-343-276-185-270-330-763-136-1097a532 532 0 0 1 447-273C681 600 813 700 900 700c86 0 248-118 416-100zm30-525a487 487 0 0 1-111 349 410 410 0 0 1-324 153 464 464 0 0 1 114-336A496 496 0 0 1 1318 72z" 
                   fill="url(#apple-gradient)" 
                   class="liquid-glass"/>
@@ -80,22 +80,34 @@
     <script>
         const apple = document.querySelector('.big.apple');
         const path = apple.querySelector('path');
-        let currentState = 'color'; // 'color' or 'black'
+        let currentState = 'color';
         let isTransitioning = false;
         
-        // Generate harmonious 2-color gradient
-        function generatePleasantGradient() {
+        // Generate gradient with probability-based color stops
+        function generateGradient() {
             const defs = apple.querySelector('defs');
             
             // Remove old gradient if exists
             const oldGradient = defs.querySelector('#dynamic-gradient');
             if (oldGradient) defs.removeChild(oldGradient);
             
-            // Base hue with slight variation
-            const baseHue = Math.floor(Math.random() * 360);
-            const secondHue = (baseHue + 30 + Math.floor(Math.random() * 40)) % 360;
+            // Determine number of colors based on probability
+            const rand = Math.random() * 100;
+            let colorCount = 2; // Default 2-color
             
-            // Create linear gradient
+            if (rand < 0.5) {
+                colorCount = 5; // 0.5% chance
+            } else if (rand < 3.5) {
+                colorCount = 4; // 3% chance
+            } else if (rand < 13.5) {
+                colorCount = 3; // 10% chance
+            }
+            
+            // Base hue with variations
+            const baseHue = Math.floor(Math.random() * 360);
+            const hueVariation = 30 + Math.floor(Math.random() * 40);
+            
+            // Create gradient
             const gradient = document.createElementNS('http://www.w3.org/2000/svg', 'linearGradient');
             gradient.id = 'dynamic-gradient';
             
@@ -110,19 +122,31 @@
             gradient.setAttribute('x2', x2);
             gradient.setAttribute('y2', y2);
             
-            // Two harmonious colors
-            const stop1 = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
-            stop1.setAttribute('offset', '0%');
-            stop1.setAttribute('stop-color', `hsl(${baseHue}, 85%, 60%)`);
+            // Add color stops based on count
+            for (let i = 0; i < colorCount; i++) {
+                const stop = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
+                const offset = (i / (colorCount - 1)) * 100 + '%';
+                
+                // Calculate hue with harmonious variation
+                let hue;
+                if (colorCount === 2) {
+                    hue = (baseHue + (i * hueVariation)) % 360;
+                } else {
+                    // For multi-color gradients, create more variation while maintaining harmony
+                    const segment = 360 / colorCount;
+                    hue = (baseHue + (i * segment) + Math.floor(Math.random() * 20) - 10) % 360;
+                }
+                
+                // Slightly vary saturation and lightness for depth
+                const saturation = 80 + Math.floor(Math.random() * 15);
+                const lightness = 55 + Math.floor(Math.random() * 10) - (i * 5);
+                
+                stop.setAttribute('offset', offset);
+                stop.setAttribute('stop-color', `hsl(${hue}, ${saturation}%, ${lightness}%)`);
+                gradient.appendChild(stop);
+            }
             
-            const stop2 = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
-            stop2.setAttribute('offset', '100%');
-            stop2.setAttribute('stop-color', `hsl(${secondHue}, 85%, 60%)`);
-            
-            gradient.appendChild(stop1);
-            gradient.appendChild(stop2);
             defs.appendChild(gradient);
-            
             return 'url(#dynamic-gradient)';
         }
         
@@ -146,7 +170,7 @@
                 }, 800);
             } else {
                 // Transition to color with new gradient
-                const newGradient = generatePleasantGradient();
+                const newGradient = generateGradient();
                 path.style.transition = 'fill 1s ease, filter 0.8s ease';
                 path.setAttribute('fill', newGradient);
                 apple.classList.add('liquid-glass');
