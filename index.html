@@ -4,11 +4,173 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>大苹果</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background: #f5f5f7;
+            overflow: hidden;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 400px;
+            padding: 20px;
+        }
+        
+        .big.apple {
+            width: 100%;
+            height: auto;
+            cursor: pointer;
+            filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.15));
+        }
+        
+        .big.apple path {
+            transition: fill 1s ease, filter 0.8s ease;
+            transform-origin: center;
+        }
+        
+        .liquid-glass {
+            filter: url(#liquid-glass);
+        }
+        
+        @keyframes gentlePulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+        
+        .pulse {
+            animation: gentlePulse 0.8s ease-out;
+        }
+    </style>
 </head>
 <body>
-    <svg class="big apple" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1800 2300" aria-hidden="true">
-        <title>Big Apple</title>
-        <path d="m1288 597l28 2c160 5 308 85 400 216a495 495 0 0 0-236 415 478 478 0 0 0 292 440 1096 1096 0 0 1-152 310c-90 133-183 264-332 266-145 4-194-85-360-85-167 0-219 83-357 89-142 5-250-143-343-276-185-270-330-763-136-1097a532 532 0 0 1 447-273C681 600 813 700 900 700c86 0 248-118 416-100zm30-525a487 487 0 0 1-111 349 410 410 0 0 1-324 153 464 464 0 0 1 114-336A496 496 0 0 1 1318 72z"/>
-    </svg>
+    <div class="container">
+        <svg class="big apple" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1800 2300" preserveAspectRatio="xMidYMid meet">
+            <title>Big Apple</title>
+            <defs>
+                <!-- Subtle liquid glass effect -->
+                <filter id="liquid-glass" x="-10%" y="-10%" width="120%" height="120%">
+                    <feGaussianBlur in="SourceGraphic" stdDeviation="6" result="blur" />
+                    <feColorMatrix in="blur" mode="matrix" 
+                        values="1 0 0 0 0  
+                                0 1 0 0 0  
+                                0 0 1 0 0  
+                                0 0 0 18 -8" result="liquid" />
+                    <feComposite in="SourceGraphic" in2="liquid" operator="atop" />
+                </filter>
+                
+                <!-- Initial gradient -->
+                <linearGradient id="apple-gradient" x1="30%" y1="0%" x2="70%" y2="100%">
+                    <stop offset="0%" stop-color="#FF5F6D" />
+                    <stop offset="100%" stop-color="#FFC371" />
+                </linearGradient>
+            </defs>
+            
+            <!-- Original Apple path with exact dimensions -->
+            <path d="m1288 597l28 2c160 5 308 85 400 216a495 495 0 0 0-236 415 478 478 0 0 0 292 440 1096 1096 0 0 1-152 310c-90 133-183 264-332 266-145 4-194-85-360-85-167 0-219 83-357 89-142 5-250-143-343-276-185-270-330-763-136-1097a532 532 0 0 1 447-273C681 600 813 700 900 700c86 0 248-118 416-100zm30-525a487 487 0 0 1-111 349 410 410 0 0 1-324 153 464 464 0 0 1 114-336A496 496 0 0 1 1318 72z" 
+                  fill="url(#apple-gradient)" 
+                  class="liquid-glass"/>
+        </svg>
+    </div>
+
+    <script>
+        const apple = document.querySelector('.big.apple');
+        const path = apple.querySelector('path');
+        let currentState = 'color'; // 'color' or 'black'
+        let isTransitioning = false;
+        
+        // Generate harmonious 2-color gradient
+        function generatePleasantGradient() {
+            const defs = apple.querySelector('defs');
+            
+            // Remove old gradient if exists
+            const oldGradient = defs.querySelector('#dynamic-gradient');
+            if (oldGradient) defs.removeChild(oldGradient);
+            
+            // Base hue with slight variation
+            const baseHue = Math.floor(Math.random() * 360);
+            const secondHue = (baseHue + 30 + Math.floor(Math.random() * 40)) % 360;
+            
+            // Create linear gradient
+            const gradient = document.createElementNS('http://www.w3.org/2000/svg', 'linearGradient');
+            gradient.id = 'dynamic-gradient';
+            
+            // Gentle diagonal direction
+            const x1 = Math.floor(Math.random() * 30 + 20) + '%';
+            const y1 = Math.floor(Math.random() * 30) + '%';
+            const x2 = Math.floor(Math.random() * 30 + 70) + '%';
+            const y2 = Math.floor(Math.random() * 30 + 70) + '%';
+            
+            gradient.setAttribute('x1', x1);
+            gradient.setAttribute('y1', y1);
+            gradient.setAttribute('x2', x2);
+            gradient.setAttribute('y2', y2);
+            
+            // Two harmonious colors
+            const stop1 = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
+            stop1.setAttribute('offset', '0%');
+            stop1.setAttribute('stop-color', `hsl(${baseHue}, 85%, 60%)`);
+            
+            const stop2 = document.createElementNS('http://www.w3.org/2000/svg', 'stop');
+            stop2.setAttribute('offset', '100%');
+            stop2.setAttribute('stop-color', `hsl(${secondHue}, 85%, 60%)`);
+            
+            gradient.appendChild(stop1);
+            gradient.appendChild(stop2);
+            defs.appendChild(gradient);
+            
+            return 'url(#dynamic-gradient)';
+        }
+        
+        // Smooth transition between states
+        function toggleColor() {
+            if (isTransitioning) return;
+            
+            isTransitioning = true;
+            apple.classList.add('pulse');
+            
+            if (currentState === 'color') {
+                // Transition to black
+                path.style.transition = 'fill 0.8s ease, filter 0.6s ease';
+                path.setAttribute('fill', '#111');
+                apple.classList.remove('liquid-glass');
+                
+                setTimeout(() => {
+                    currentState = 'black';
+                    isTransitioning = false;
+                    apple.classList.remove('pulse');
+                }, 800);
+            } else {
+                // Transition to color with new gradient
+                const newGradient = generatePleasantGradient();
+                path.style.transition = 'fill 1s ease, filter 0.8s ease';
+                path.setAttribute('fill', newGradient);
+                apple.classList.add('liquid-glass');
+                
+                setTimeout(() => {
+                    currentState = 'color';
+                    isTransitioning = false;
+                    apple.classList.remove('pulse');
+                }, 1000);
+            }
+        }
+        
+        // Initial setup
+        apple.addEventListener('click', toggleColor);
+        
+        // Responsive handling
+        function handleResize() {
+            const container = document.querySelector('.container');
+            const size = Math.min(window.innerWidth, window.innerHeight) * 0.7;
+            container.style.maxWidth = `${size}px`;
+        }
+
+        window.addEventListener('resize', handleResize);
+        handleResize();
+    </script>
 </body>
 </html>
